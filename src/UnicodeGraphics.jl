@@ -5,6 +5,38 @@ module UnicodeGraphics
 
 export blockize, brailize, blockize!, brailize!
 
+# ref: LaTeXStrings.jl, https://github.com/stevengj/LaTeXStrings.jl/tree/v1.0.3
+struct UnicodeGraphicsString <: AbstractString
+    s::String
+end
+Base.write(io::IO, s::UnicodeGraphicsString) = write(io, s.s)
+Base.firstindex(s::UnicodeGraphicsString) = firstindex(s.s)
+Base.lastindex(s::UnicodeGraphicsString) = lastindex(s.s)
+Base.iterate(s::UnicodeGraphicsString, i::Int) = iterate(s.s, i)
+Base.iterate(s::UnicodeGraphicsString) = iterate(s.s)
+Base.nextind(s::UnicodeGraphicsString, i::Int) = nextind(s.s, i)
+Base.prevind(s::UnicodeGraphicsString, i::Int) = prevind(s.s, i)
+Base.eachindex(s::UnicodeGraphicsString) = eachindex(s.s)
+Base.length(s::UnicodeGraphicsString) = length(s.s)
+Base.getindex(s::UnicodeGraphicsString, i::Integer) = getindex(s.s, i)
+Base.getindex(s::UnicodeGraphicsString, i::Int) = getindex(s.s, i)
+Base.getindex(s::UnicodeGraphicsString, i::UnitRange{Int}) = getindex(s.s, i)
+Base.getindex(s::UnicodeGraphicsString, i::UnitRange{<:Integer}) = getindex(s.s, i)
+Base.getindex(s::UnicodeGraphicsString, i::AbstractVector{<:Integer}) = getindex(s.s, i)
+Base.codeunit(s::UnicodeGraphicsString, i::Integer) = codeunit(s.s, i)
+Base.codeunit(s::UnicodeGraphicsString) = codeunit(s.s)
+Base.ncodeunits(s::UnicodeGraphicsString) = ncodeunits(s.s)
+Base.codeunits(s::UnicodeGraphicsString) = codeunits(s.s)
+Base.sizeof(s::UnicodeGraphicsString) = sizeof(s.s)
+Base.isvalid(s::UnicodeGraphicsString, i::Integer) = isvalid(s.s, i)
+Base.pointer(s::UnicodeGraphicsString) = pointer(s.s)
+Base.IOBuffer(s::UnicodeGraphicsString) = IOBuffer(s.s)
+Base.unsafe_convert(T::Union{Type{Ptr{UInt8}},Type{Ptr{Int8}},Cstring}, s::UnicodeGraphicsString) = Base.unsafe_convert(T, s.s)
+
+function Base.show(io::IO, s::UnicodeGraphicsString)
+    print(io, s.s)
+end
+
 """
     brailize(a, cutoff=0)
 Convert an array to a block unicode string, filling values above the cutoff point.
@@ -12,7 +44,7 @@ Convert an array to a block unicode string, filling values above the cutoff poin
 blockize(a, cutoff=0) = begin
     yrange, xrange = axes(a)
     out = Array{Char,2}(undef, length(xrange) + 1, (length(yrange) - 1) ÷ 2 + 1)
-    blockize!(out, a, cutoff) 
+    blockize!(out, a, cutoff)
 end
 
 """
@@ -25,7 +57,7 @@ yrange, xrange = axes(a)
 out = Array{Char,2}(undef, length(xrange) + 1, (length(yrange) - 1) ÷ 2 + 1)
 ```
 """
-blockize!(out, a, cutoff=0) = join(block_array!(out, a, cutoff))
+blockize!(out, a, cutoff=0) = join(block_array!(out, a, cutoff)) |> UnicodeGraphicsString
 
 function block_array!(out, a, cutoff)
     yrange, xrange = axes(a)
@@ -54,10 +86,10 @@ const braile_hex = ((0x01, 0x08), (0x02, 0x10), (0x04, 0x20), (0x40, 0x80))
     brailize(a, cutoff=0)
 Convert an array to a braile unicode string, filling values above the cutoff point.
 """
-brailize(a, cutoff=0) = begin 
+brailize(a, cutoff=0) = begin
     yrange, xrange = axes(a)
     out = Array{Char,2}(undef, (length(xrange) - 1) ÷ 2 + 2, (length(yrange) - 1) ÷ 4 + 1)
-    brailize!(out, a, cutoff) 
+    brailize!(out, a, cutoff)
 end
 
 """
@@ -70,7 +102,7 @@ yrange, xrange = axes(a)
 out = Array{Char,2}(undef, (length(xrange) - 1) ÷ 2 + 2, (length(yrange) - 1) ÷ 4 + 1)
 ```
 """
-brailize!(out, a, cutoff=0) = join(braile_array!(out, a, cutoff))
+brailize!(out, a, cutoff=0) = join(braile_array!(out, a, cutoff)) |> UnicodeGraphicsString
 
 function braile_array!(out, a, cutoff)
     yrange, xrange = axes(a)
